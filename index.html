@@ -1,0 +1,120 @@
+<html>
+<head>
+	<title>Jasmine step</title>
+	<link rel="stylesheet" href="http://pivotal.github.io/jasmine/lib/jasmine-1.3.1/jasmine.css"/>
+	<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+	<script src="http://pivotal.github.io/jasmine/lib/jasmine-1.3.1/jasmine.js"></script>
+	<script src="http://pivotal.github.io/jasmine/lib/jasmine-1.3.1/jasmine-html.js"></script>
+	<script src="jasmine-step.js"></script>
+	<script type="text/javascript">
+		function mockAjax(){
+			$.ajax = function(opts){
+				setTimeout(function(){
+					opts.success({msg: 'ok'});
+				}, 2000);
+			};
+		};
+		var counter = 0;
+		function resetCounter(){
+			counter = 0;
+			$('#counter').text(counter + 's');
+		}
+		$(function(){
+			setInterval(function(){
+				counter++;
+				$('#counter').text(counter + 's');
+			}, 1000);
+
+			mockAjax();
+		});
+
+	</script>
+	<script type="text/javascript">
+		describe("Jasmine Step", function(){
+
+			it("should waits for done result", function(){
+				step("watch the counter", function(done){
+					resetCounter();
+					done(function(){
+						return $('#counter').text() == '3s';
+					});
+				});
+			});
+
+			it("should do sync and asynchronous step", function(){
+				step("fill form", function(){
+					$('[name=username]').val("jasmine");
+				});
+				step("watch the counter", function(done){
+					resetCounter();
+					done(function(){
+						return $('#counter').text() == '3s';
+					});
+				});
+			});
+
+			it("should accept done without args", function(){
+				step("call the serverside", function(done){
+					$.ajax({url: 'http://server/rest', dataType: "json",
+						success: function(data){
+							$('#serverResponse').text(data.msg);
+							done();
+						}
+					});
+				});
+				step("verify message received", function(){
+					expect($('#serverResponse').text()).toBe("ok");
+				});
+			});
+		});
+	</script>
+</head>
+<body>
+	<form>
+		<input name="username" />
+	</form>
+	<div id="counter"></div>
+	<div id="serverResponse"></div>
+
+<script type="text/javascript">
+(function() {
+  var jasmineEnv = jasmine.getEnv();
+  jasmineEnv.updateInterval = 250;
+
+  /**
+   Create the `HTMLReporter`, which Jasmine calls to provide results of each spec and each suite. The Reporter is responsible for presenting results to the user.
+   */
+  var htmlReporter = new jasmine.HtmlReporter();
+  jasmineEnv.addReporter(htmlReporter);
+
+  /**
+   Delegate filtering of specs to the reporter. Allows for clicking on single suites or specs in the results to only run a subset of the suite.
+   */
+  jasmineEnv.specFilter = function(spec) {
+    return htmlReporter.specFilter(spec);
+  };
+
+  /**
+   Run all of the tests when the page finishes loading - and make sure to run any previous `onload` handler
+
+   ### Test Results
+
+   Scroll down to see the results of all of these specs.
+   */
+  var currentWindowOnload = window.onload;
+  window.onload = function() {
+    if (currentWindowOnload) {
+      currentWindowOnload();
+    }
+
+    //document.querySelector('.version').innerHTML = jasmineEnv.versionString();
+    execJasmine();
+  };
+
+  function execJasmine() {
+    jasmineEnv.execute();
+  }
+})();
+</script>
+</body>
+</html>
