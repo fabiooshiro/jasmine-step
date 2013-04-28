@@ -50,7 +50,7 @@ Sync step
 ```javascript
 describe("some feature", function(){
     it("should calculate max on server", function(){
-        step("call server side", function(){
+        step("call server side", function(){ // without done
             new Criteria('Music')
                 .projections(function(p){
                     p.max('time');
@@ -64,6 +64,8 @@ describe("some feature", function(){
     });
 });
 ```
+
+## Full docs:
 
 ```javascript
 describe("Jasmine Step", function(){
